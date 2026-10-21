@@ -1,0 +1,30 @@
+{
+  "name": "kdesk",
+  "version": "2.0.0",
+  "description": "Local recruiting workspace",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "node build.cjs",
+    "test": "node tests/workflows.cjs && node tests/documents.cjs && node tests/safety.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wagers0/1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/wagers0/1/issues"
+  },
+  "homepage": "https://github.com/wagers0/1#readme",
+  "dependencies": {
+    "esbuild": "0.28.2",
+    "mammoth": "1.13.0",
+    "pdfjs-dist": "6.4.299"
+  }
+}
