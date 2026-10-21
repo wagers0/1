@@ -1,4 +1,4 @@
-# kdesk 2 — local recruiting workspace
+# kdesk 2.1 — local recruiting workspace
 
 A single-file, offline recruiting workspace. **Open `dist/kdesk.html` in Microsoft Edge. No installation, server, account, API key, or external network dependency is required by the application.** Browser/company policies may still restrict local files or storage.
 
@@ -11,6 +11,12 @@ A single-file, offline recruiting workspace. **Open `dist/kdesk.html` in Microso
 5. Keep a consistent file location. Export regular backups; browser storage can be cleared by browser settings or company policies.
 
 The app can offer to copy an earlier `recruiter-desk.state.v1` localStorage workspace if the browser exposes it at the current file origin. An explicit fresh JSON export is preferable: this clean build does not automatically read the previous application's separate recovery database. The old app's storage key is not overwritten. The user's actual HTML and current backup were not supplied for this rebuild, so migration was verified using representative version 1 fixtures, not their live data.
+
+## Pipeline columns
+
+Screening → Ready to Submit → Submitted → Interviewing → Waiting On Feedback → Offer → Onboarding → Placed → Not Proceeding.
+
+Not Proceeding retains the candidate, linked record, and history. It is excluded from the active pipeline metric and automatic pipeline follow-up queue. Standalone follow-ups remain independent. Moving a card back to an eligible stage restores its scheduled pipeline next action. Existing On Hold, Rejected, and Withdrawn records remain unchanged in the separate outcomes section. New stages work in dropdowns, filters, forms, drag/reorder, history, undo, and backups. Backups containing these stages need this version or later; older builds do not recognize the new stage names.
 
 ## What changed
 

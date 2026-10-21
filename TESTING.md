@@ -38,3 +38,7 @@ Test data is synthetic and only exists in isolated browser contexts and test fix
 ## Practical limits
 
 These tests are functional checks, not a guarantee of durability under browser/company policies or proof that all memory leaks are eliminated. The 1,500-record check validates bounded rendering, not an extensive performance benchmark. A real migration with the user's current exported data is still pending their file. Current user candidate records were not imported or modified.
+
+## Pipeline stage update — kdesk 2.1
+
+`tests/stages.cjs` verifies the exact nine-column order, new-stage drag/reload and timestamped history, independent candidate-role stages, Not Proceeding exclusion from active metrics/pipeline follow-ups, restoration of reminders when reopened, filters, undo, backup export/import, and stage options in creation/edit forms. Existing version 1 Rejected records are preserved. The original workflow suite also passes after this change.

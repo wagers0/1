@@ -1,11 +1,11 @@
-import {STAGES,ACTIVE,fields,defaults,blank,validate,clone,event,today,moveRecord,duplicateCandidates,uid} from './model.js';
+import {STAGES,BOARD_STAGES,ACTIVE,fields,defaults,blank,validate,clone,event,today,moveRecord,duplicateCandidates,uid} from './model.js';
 import {Store} from './storage.js';
 import {extract,suggest} from './importer.js';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const btn=(action,label,id='',cls='')=>`<button type="button" data-action="${action}" data-id="${esc(id)}" class="${cls}">${label}</button>`;
 const option=(value,label,selected)=>`<option value="${esc(value)}"${value===selected?' selected':''}>${esc(label)}</option>`;
 const store=new Store();let state=blank(),view='pipeline',q='',filters={},limit=40,page=0,selected=new Set(),undoState=null,dirty=false,pendingSave=0,saveTimer,searchTimer,editTimer,draft=null,editor=null,dragId=null,queue=[],importIndex=0,importBusy=false,legacy=null;
-let benchLayout='tiles';let writable=false;let cm=new Map(),rm=new Map();const colors=['#7aa9cc','#b0a1dc','#35b6e7','#efbf76','#7cc9bb','#79bd8f'];
+let benchLayout='tiles';let writable=false;let cm=new Map(),rm=new Map();const colors=['#7aa9cc','#b0a1dc','#35b6e7','#efbf76','#d7b785','#7cc9bb','#71bfd1','#79bd8f','#b89099'];
 function index(){cm=new Map(state.candidates.map(x=>[x.id,x]));rm=new Map(state.roles.map(x=>[x.id,x]));}
 function find(kind,id){return state[kind].find(x=>x.id===id);}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,4500);}
@@ -16,7 +16,7 @@ function money(x){return x!==''&&x!=null?'$'+Number(x).toLocaleString()+'/hr':'N
 function initials(x){return String(x).split(/\s+/).slice(0,2).map(s=>s[0]||'').join('').toUpperCase();}
 function activeSub(s){return !cm.get(s.candidateId)?.archived&&!rm.get(s.roleId)?.archived;}
 function overdue(date){return date&&date<today();}
-function taskList(){const a=state.submissions.filter(s=>activeSub(s)&&!['Rejected','Withdrawn','Placed'].includes(s.stage)&&(s.nextAction||s.followUpDate)).map(s=>({id:'s:'+s.id,title:s.nextAction||'Follow up with candidate',dueDate:s.followUpDate,candidateId:s.candidateId,roleId:s.roleId,kind:'submissions',recordId:s.id,done:false}));return [...a,...state.tasks.filter(t=>!t.archived&&(!t.candidateId||!cm.get(t.candidateId)?.archived)&&(!t.roleId||!rm.get(t.roleId)?.archived)).map(t=>({...t,id:'t:'+t.id,recordId:t.id,kind:'tasks'}))];}
+function taskList(){const a=state.submissions.filter(s=>activeSub(s)&&!['Rejected','Withdrawn','Placed','Not Proceeding'].includes(s.stage)&&(s.nextAction||s.followUpDate)).map(s=>({id:'s:'+s.id,title:s.nextAction||'Follow up with candidate',dueDate:s.followUpDate,candidateId:s.candidateId,roleId:s.roleId,kind:'submissions',recordId:s.id,done:false}));return [...a,...state.tasks.filter(t=>!t.archived&&(!t.candidateId||!cm.get(t.candidateId)?.archived)&&(!t.roleId||!rm.get(t.roleId)?.archived)).map(t=>({...t,id:'t:'+t.id,recordId:t.id,kind:'tasks'}))];}
 function scheduleSave(){dirty=true;status('Saving changes…');clearTimeout(saveTimer);saveTimer=setTimeout(flush,250);}
 async function flush(){clearTimeout(saveTimer);if(!dirty)return;const snapshot=clone(state);dirty=false;pendingSave++;try{const mode=await store.save(snapshot);if(!dirty&&pendingSave===1)status(mode==='database'?'✓ Saved on this device':'✓ Saved · backup browser storage');$('retry').hidden=true;warning('');}catch(e){dirty=true;status('Not saved — export a backup');warning(e.message);$('retry').hidden=false;}finally{pendingSave--;}}
 function commit(next,message='',allowUndo=false){if(!writable)throw Error('Workspace recovery is required before editing. Import a valid backup first.');const valid=validate(next);if(!allowUndo)undoState=null;state=valid;index();scheduleSave();render();if(message)toast(message);}
@@ -51,7 +51,7 @@ function renderContent(){
  $('selection').hidden=true;
  if(view==='pipeline'){
   const rows=pipelineRows();const groups=new Map(STAGES.map(s=>[s,[]]));for(const s of rows)groups.get(s.stage).push(s);
-  $('content').innerHTML=`<div class="section-label"><span>${rows.length} matching pipeline records</span><span>Drag to reorder · move between stages</span></div><div class="board">${ACTIVE.map((s,i)=>`<section class="column" data-drop="${s}"><div class="column-head" style="--stage:${colors[i]}"><i class="dot"></i>${s}<span class="count">${groups.get(s).length}</span></div>${groups.get(s).slice(0,limit).map(subCard).join('')||'<div class="empty-column">No candidates at this stage</div>'}${s==='Screening'?btn('addPipeline','＋ Add to Screening','','add-screen'):''}</section>`).join('')}</div><details class="inactive" ${filters.stage&&!ACTIVE.includes(filters.stage)?'open':''}><summary>On hold & past outcomes (${rows.filter(s=>!ACTIVE.includes(s.stage)).length})</summary><div class="grid">${rows.filter(s=>!ACTIVE.includes(s.stage)).slice(0,limit).map(subCard).join('')}</div></details>${STAGES.some(s=>groups.get(s).length>limit)?btn('more','Show more cards'):''}`;
+  $('content').innerHTML=`<div class="section-label"><span>${rows.length} matching pipeline records</span><span>Drag to reorder · move between stages</span></div><div class="board">${BOARD_STAGES.map((s,i)=>`<section class="column" data-drop="${s}"><div class="column-head" style="--stage:${colors[i]}"><i class="dot"></i>${s}<span class="count">${groups.get(s).length}</span></div>${groups.get(s).slice(0,limit).map(subCard).join('')||'<div class="empty-column">No candidates at this stage</div>'}${s==='Screening'?btn('addPipeline','＋ Add to Screening','','add-screen'):''}</section>`).join('')}</div><details class="inactive" ${filters.stage&&!BOARD_STAGES.includes(filters.stage)?'open':''}><summary>On hold & past outcomes (${rows.filter(s=>!BOARD_STAGES.includes(s.stage)).length})</summary><div class="grid">${rows.filter(s=>!BOARD_STAGES.includes(s.stage)).slice(0,limit).map(subCard).join('')}</div></details>${STAGES.some(s=>groups.get(s).length>limit)?btn('more','Show more cards'):''}`;
   return;
  }
  if(view==='followups'){renderTasks();return;}

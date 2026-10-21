@@ -1,5 +1,6 @@
-export const STAGES=['Screening','Ready to Submit','Submitted','Interviewing','Offer','Placed','On Hold','Rejected','Withdrawn'];
-export const ACTIVE=STAGES.slice(0,6);
+export const BOARD_STAGES=['Screening','Ready to Submit','Submitted','Interviewing','Waiting On Feedback','Offer','Onboarding','Placed','Not Proceeding'];
+export const STAGES=[...BOARD_STAGES,'On Hold','Rejected','Withdrawn'];
+export const ACTIVE=BOARD_STAGES.filter(stage=>stage!=='Not Proceeding');
 export const uid=()=>crypto.randomUUID();
 export const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 export const blank=()=>({schemaVersion:2,candidates:[],roles:[],submissions:[],tasks:[]});

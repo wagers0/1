@@ -1,6 +1,6 @@
 {
   "name": "kdesk",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Local recruiting workspace",
   "main": "index.js",
   "directories": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "node build.cjs",
-    "test": "node tests/workflows.cjs && node tests/documents.cjs && node tests/safety.cjs"
+    "test": "node tests/workflows.cjs && node tests/documents.cjs && node tests/safety.cjs && node tests/stages.cjs"
   },
   "repository": {
     "type": "git",
